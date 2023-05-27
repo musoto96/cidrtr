@@ -1,5 +1,4 @@
 #!/usr/bin/awk
-
 function bintodec(bin){
     # This function turns a binary number 
     #  or string representing one, into decimal.
@@ -22,7 +21,6 @@ function dectobin(dec){
 
     _bin=1
     binsum=0
-    n=1
     while(bintodec(binsum)<odec){
         _bin=1
         while(bintodec(_bin)<=dec){
@@ -31,7 +29,6 @@ function dectobin(dec){
         _nbin=int(substr(_bin"",1,length(_bin"")-1))
         binsum+=_nbin
         dec-=bintodec(_nbin)
-        n++
     }
     return binsum
 }
@@ -65,6 +62,28 @@ function octettomask(octet){
     }
     return sbmsk
 }
+function padbin(bin,blen){
+    # This function will pad a binary
+    #  number with zeroes to the left
+    bin=bin""
+    len=split(bin,arr,"")
+    if(len<blen){
+        for(_l=0;_l<blen-len;_l++){
+            bin="0"bin
+        }
+        return bin
+    }else{
+        return bin
+    }
+}
+function bintodecaddr(str) {
+    # This recursive function will add
+    #  dots every 8 characters for the octal
+    if (length(str)<=8)
+        return str;
+    else
+        return substr(str,1,8)"."bintodecaddr(substr(str,8+1));
+}
 
 BEGIN{
 }
@@ -86,38 +105,34 @@ for(i=1;i<=4;i++){
     if(octs[i]>255){
         print("Invalid address.","Error on octet",i,":"octs[i])
     }else{
-        if(i<4) {
-            addrbin=addrbin dectobin(octs[i])"."
-        } else{
-            addrbin=addrbin dectobin(octs[i])
-        }
+        addrbin=addrbin padbin(dectobin(octs[i]),8)
     }
 }
 # TODO EOF
 
-print addrbin
 
 # Mask validation
 mask=cidr[2]
 if(mask>32)print("Invalid mask:",mask)
 
-#comp=32-mask
-#nhost=comp**2
-#inoct=numtooctt(mask)
-#print inoct
-#submask=octettomask(inoct)
-#print submask
+# Computations
+comp=32-mask
+nhost=comp**2
+submask=octettomask(numtooctt(mask))
 
-#_len=0
-#_len=split(addr,host1,".")
-#print host1[_len]
-#print host1[1]
+host1=addrbin
+gsub(".{"comp"}$",sprintf("%0"comp"d",1),host1)
 
-#test = dectobin(octs[1])
-#print test
-#print bintodec(test)
-#print dectobin(0)
+hostn=addrbin
+gsub(".{"comp"}$",sprintf("%*s",comp,""),hostn)
+gsub(/ /,1,hostn)
 
+host1 = bintodecaddr(host1"");
+hostn = bintodecaddr(hostn"");
+
+print octettomask(host1)
+print octettomask(hostn)
+print submask
 }
 
 #
