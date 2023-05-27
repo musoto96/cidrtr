@@ -78,7 +78,7 @@ function padbin(bin,blen){
 }
 function bintodecaddr(str) {
     # This recursive function will add
-    #  dots every 8 characters for the octal
+    #  dots every 8 characters for the octet
     if (length(str)<=8)
         return str;
     else
@@ -97,7 +97,6 @@ BEGIN{
 split($0,cidr,"/")
 
 # Address validation
-# TODO: Turn these lines into a function up to EOF
 addr=cidr[1]
 split(addr,octs,".")
 addrbin=""
@@ -108,8 +107,6 @@ for(i=1;i<=4;i++){
         addrbin=addrbin padbin(dectobin(octs[i]),8)
     }
 }
-# TODO EOF
-
 
 # Mask validation
 mask=cidr[2]
@@ -127,12 +124,8 @@ hostn=addrbin
 gsub(".{"comp"}$",sprintf("%*s",comp,""),hostn)
 gsub(/ /,1,hostn)
 
-host1 = bintodecaddr(host1"");
-hostn = bintodecaddr(hostn"");
-
-print octettomask(host1)
-print octettomask(hostn)
-print submask
+# Report
+printf("%-18s %s\n%-18s %s \- %s\n\n","CIDR","Range",$0,octettomask(bintodecaddr(host1"")),octettomask(bintodecaddr(hostn"")))
 }
 
 #
@@ -140,4 +133,11 @@ print submask
 #  This awk block contains the code
 #  to turn a range into CIDR notation.
 #
-/^[[:blank:]]*([0-9]{1,3}\.){3}[0-9]{1,3}[[:blank:]]*([0-9]{1,3}\.){3}[0-9]{1,3}[[:blank:]]*$/{print("Range Correct")}
+/^[[:blank:]]*([0-9]{1,3}\.){3}[0-9]{1,3}[[:blank:]]*-?[[:blank:]]*([0-9]{1,3}\.){3}[0-9]{1,3}[[:blank:]]*$/{
+print("Range Correct")
+
+# Range validation
+# TODO
+#  Remove dots, and compare decimal number size
+#  first number should be larger than second number
+}
