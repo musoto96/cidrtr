@@ -68,21 +68,21 @@ function padbin(bin,blen){
     bin=bin""
     len=split(bin,arr,"")
     if(len<blen){
-        for(_l=0;_l<blen-len;_l++){
-            bin="0"bin
-        }
+        bin=sprintf("%"blen"s",bin)
+        gsub(/[[:blank:]]/,"0",bin)
         return bin
     }else{
         return bin
     }
 }
-function bintodecaddr(str) {
+function addrbintodec(str) {
     # This recursive function will add
     #  dots every 8 characters for the octet
-    if (length(str)<=8)
+    if(length(str)<=8){
         return str;
-    else
-        return substr(str,1,8)"."bintodecaddr(substr(str,8+1));
+    }else{
+        return substr(str,1,8)"."addrbintodec(substr(str,8+1));
+    }
 }
 
 BEGIN{
@@ -118,16 +118,15 @@ nhost=comp**2
 submask=octettomask(numtooctt(mask))
 
 host1=addrbin
-gsub(".{"comp"}$",sprintf("%0"comp"d",1),host1)
+gsub(".{"comp"}$",sprintf("%0"comp"d",0),host1)
 
 hostn=addrbin
 gsub(".{"comp"}$",sprintf("%*s",comp,""),hostn)
-gsub(/ /,1,hostn)
+gsub(/[[:blank:]]/,1,hostn)
 
 # Report
-printf("%-18s %s\n%-18s %s \- %s\n\n","CIDR","Range",$0,octettomask(bintodecaddr(host1"")),octettomask(bintodecaddr(hostn"")))
+printf("%-18s %s\n%-18s %s \- %s\n\n","CIDR","Range",$0,octettomask(addrbintodec(host1"")),octettomask(addrbintodec(hostn"")))
 }
-
 #
 # RANGE
 #  This awk block contains the code
@@ -135,9 +134,27 @@ printf("%-18s %s\n%-18s %s \- %s\n\n","CIDR","Range",$0,octettomask(bintodecaddr
 #
 /^[[:blank:]]*([0-9]{1,3}\.){3}[0-9]{1,3}[[:blank:]]*-?[[:blank:]]*([0-9]{1,3}\.){3}[0-9]{1,3}[[:blank:]]*$/{
 print("Range Correct")
-
 # Range validation
 # TODO
 #  Remove dots, and compare decimal number size
 #  first number should be larger than second number
+gsub(/[[:blank:]]/,"",$0)
+split($0,range,"-")
+print $0
+
+split(range[1],strtrange,".")
+split(range[2],endrange,".")
+
+diff=0
+for(i=0;i<4;i++){
+    diff+=endrange[i+1]-strtrange[i+1]
+}
+print diff
+
+# 2**n = diff+1
+# n = log2(diff+1)
+# n = log(diff+1) / log(2)
+
+n = log(diff+1)/log(2)
+print n
 }
