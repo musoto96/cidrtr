@@ -102,7 +102,8 @@ split(addr,octs,".")
 addrbin=""
 for(i=1;i<=4;i++){
     if(octs[i]>255){
-        print("Invalid address.","Error on octet",i,":"octs[i])
+        print("\nInvalid address.","Error on octet",i":",octs[i],"\n")
+        exit 1
     }else{
         addrbin=addrbin padbin(dectobin(octs[i]),8)
     }
@@ -110,9 +111,12 @@ for(i=1;i<=4;i++){
 
 # Mask validation
 mask=cidr[2]
-if(mask>32)print("Invalid mask:",mask)
+if(mask>32){
+    print("\nInvalid mask:",mask,"\n")
+    exit 1
+}
 
-# Computations
+# Processing
 comp=32-mask
 nhost=comp**2
 submask=octettomask(numtooctt(mask))
@@ -133,28 +137,38 @@ printf("%-18s %s\n%-18s %s \- %s\n\n","CIDR","Range",$0,octettomask(addrbintodec
 #  to turn a range into CIDR notation.
 #
 /^[[:blank:]]*([0-9]{1,3}\.){3}[0-9]{1,3}[[:blank:]]*-?[[:blank:]]*([0-9]{1,3}\.){3}[0-9]{1,3}[[:blank:]]*$/{
-print("Range Correct")
 # Range validation
-# TODO
-#  Remove dots, and compare decimal number size
-#  first number should be larger than second number
 gsub(/[[:blank:]]/,"",$0)
 split($0,range,"-")
-print $0
 
-split(range[1],strtrange,".")
-split(range[2],endrange,".")
+dec1=range[1]
+decn=range[2]
+gsub(/\./,"",dec1)
+gsub(/\./,"",decn)
+if(int(dec1)>int(decn)){
+    print("\nInvalid range start:",range[1],"is larger than end:",range[2],"\n")
+    exit 1
+}
 
+
+# Processing
+split(range[1],range1,".")
+split(range[2],rangen,".")
+
+nmask=0
 diff=0
 for(i=0;i<4;i++){
-    diff+=endrange[i+1]-strtrange[i+1]
+    if(range1[i+1]-rangen[i+1]==0){
+        nmask+=8
+    }else{
+        diff=rangen[i+1]-range1[i+1]
+    }
 }
-print diff
-
-# 2**n = diff+1
-# n = log2(diff+1)
-# n = log(diff+1) / log(2)
 
 n = log(diff+1)/log(2)
-print n
+nmask+=8-n
+ncidr=range[1]"/"nmask
+
+# Report
+printf("%-18s %s\n%-18s %s \- %s\n\n","CIDR","Range",ncidr,range[1],range[2])
 }
