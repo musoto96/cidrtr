@@ -150,7 +150,6 @@ if(int(dec1)>int(decn)){
     exit 1
 }
 
-
 # Processing
 split(range[1],range1,".")
 split(range[2],rangen,".")
@@ -162,11 +161,11 @@ for(i=0;i<4;i++){
         nmask+=8
     }else{
         diff=rangen[i+1]-range1[i+1]
+        n=log(diff+1)/log(2)
+        nmask+=8-n
     }
 }
 
-n = log(diff+1)/log(2)
-nmask+=8-n
 ncidr=range[1]"/"nmask
 
 # Report
