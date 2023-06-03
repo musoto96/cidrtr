@@ -86,8 +86,10 @@ function addrbintodec(str) {
 }
 
 BEGIN{
+    if(ARGC>1){
+        printf("%-18s %s\n","CIDR","Range")
+    }
 }
-
 #
 # CIDR
 #  This awk block contains the code
@@ -129,14 +131,18 @@ gsub(".{"comp"}$",sprintf("%*s",comp,""),hostn)
 gsub(/[[:blank:]]/,1,hostn)
 
 # Report
-printf("%-18s %s\n%-18s %s \- %s\n\n","CIDR","Range",$0,octettomask(addrbintodec(host1"")),octettomask(addrbintodec(hostn"")))
+if(ARGC>1){
+    printf("%-18s %s \- %s\n",$0,octettomask(addrbintodec(host1"")),octettomask(addrbintodec(hostn"")))
+}else{
+    printf("%-18s %s\n%-18s %s \- %s\n\n","CIDR","Range",$0,octettomask(addrbintodec(host1"")),octettomask(addrbintodec(hostn"")))
+}
 }
 #
 # RANGE
 #  This awk block contains the code
 #  to turn a range into CIDR notation.
 #
-/^[[:blank:]]*([0-9]{1,3}\.){3}[0-9]{1,3}[[:blank:]]*-?[[:blank:]]*([0-9]{1,3}\.){3}[0-9]{1,3}[[:blank:]]*$/{
+/^[[:blank:]]*([0-9]{1,3}\.){3}[0-9]{1,3}[[:blank:]]*-[[:blank:]]*([0-9]{1,3}\.){3}[0-9]{1,3}[[:blank:]]*$/{
 # Range validation
 gsub(/[[:blank:]]/,"",$0)
 split($0,range,"-")
@@ -169,5 +175,9 @@ for(i=0;i<4;i++){
 ncidr=range[1]"/"nmask
 
 # Report
-printf("%-18s %s\n%-18s %s \- %s\n\n","CIDR","Range",ncidr,range[1],range[2])
+if(ARGC>1){
+    printf("%-18s %s \- %s\n",ncidr,range[1],range[2])
+}else{
+    printf("%-18s %s\n%-18s %s \- %s\n\n","CIDR","Range",ncidr,range[1],range[2])
+}
 }
